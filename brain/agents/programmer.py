@@ -3,7 +3,7 @@ from typing import Any
 from langchain.agents import create_agent
 from langchain_core.language_models import BaseChatModel
 
-from agents.base_agent import BaseAgent
+from brain.agents.base_agent import BaseAgent
 
 class ProgrammerAgent:
     """

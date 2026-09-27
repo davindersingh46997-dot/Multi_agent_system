@@ -1,35 +1,39 @@
-from agents.programmer import ProgrammerAgent
+from pydantic import BaseModel
+from typing import Any
+
+from brain.agents.programmer import ProgrammerAgent
 
 class ProgrammerService:
-
     """
-    Application service responsible for 
-    executing programmer tasks.
+    The application which is responsible for the handling the programming tasks using the programming agent .
     """
 
     def __init__(
             self,
-            programmer : ProgrammerAgent
+            Programmer_agent : ProgrammerAgent
     ):
 
-        self.programmer = programmer
+        self._programmer_agent = ProgrammerAgent
 
-        self._agent = programmer.get_agent()
+        self._agent = self._programmer_agent.get_agent()
 
-    def execute_agent(
-            self,
-            task : str,
-    ) -> str:
+    def execute(self,task : str) -> Any:
+        """"
+        Execute a programming task.
+        """
+
+        if not task and not task.strip():
+            raise ValueError("Programming task cannot be empty. ")
 
         response = self._agent.invoke(
             {
-                "messages" : [
+                "messsages": [
                     {
                         "role" : "user",
-                        "content" : task,
+                         "content" : task
                     }
                 ]
             }
-        ) 
+        )
 
-        return response["messages"][-1].content
+        return response

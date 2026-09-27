@@ -8,21 +8,57 @@ function SignIn() {
     const [password, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
     const [showFaceUnlock, setShowFaceUnlock] = useState(false);
+    const [loading,setLoading] = useState(false);
 
     const navigate = useNavigate();
 
-    const handleSignIn = () => {
-        if(username == "davinder" && password == "dav"){
-            navigate("/chat");
+    const handleSignIn = async() => {
+        if(!username || !password){
+            alert("Please enter the username and password ");
+            return;
         }
 
-        else{
-            alert("username or password is incorrect ")
+        try{
+            setLoading(true);
+
+            const response = await fetch("http://127.0.0.1:8000/auth/login",{
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    username,
+                    password,
+                }),
+            });
+
+            const data = await response.json();
+
+            if(!response.ok){
+                alert(data.detail || "Invalid Username or password ");
+                return;
+            }
+
+            localStorage.setItem("access_token",data.access_token);
+
+            localStorage.setItem(
+                "user",
+                JSON.stringify(data.user)
+            );
+
+            navigate("chat");
+
+        }catch(error){
+           console.error("Login error",error);
+           alert("unable to connect to the server ");
+        }finally{
+            setLoading(false);
         }
 
         setUsername("");
         setPassword("");
-    };
+    }
+
 
     return (
         <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
@@ -64,6 +100,7 @@ function SignIn() {
                 {/* Sign In */}
                 <button
                     type="button"
+                    disabled={loading}
                     className="w-full px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 focus:outline-none focus:ring focus:ring-blue-200"
                     onClick={handleSignIn}
                 >

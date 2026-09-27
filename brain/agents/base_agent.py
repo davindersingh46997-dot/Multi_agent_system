@@ -1,6 +1,6 @@
 from abc import ABC,abstractmethod
 
-from typing import TypedDict
+from typing import TypedDict,Any
 
 class BaseAgent(TypedDict):
     """
