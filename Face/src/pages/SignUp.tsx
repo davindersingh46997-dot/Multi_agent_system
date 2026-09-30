@@ -43,7 +43,21 @@ function SignUp() {
                 }),
             });
 
-            const data = await response.json();
+        console.log("Status:", response.status);
+        console.log("Content-Type:", response.headers.get("content-type"));
+
+        const text = await response.text();
+
+        console.log("Raw response:", text);
+
+        let data;
+
+        try {
+            data = text ? JSON.parse(text) : {};
+        } catch (error) {
+            console.error("Invalid JSON response:", error);
+            console.error("Backend returned:", text);
+        }
 
             if (!response.ok) {
                 throw new Error(

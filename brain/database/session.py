@@ -4,7 +4,7 @@ from sqlalchemy.orm import DeclarativeBase,sessionmaker
 
 DATABASE_URL = os.getenv(
     "DATABASE_URL",
-    "postgresql+psycopg://postgres:postgres@localhost:5432/multi_agent"
+    "postgresql+psycopg2://postgres:dav0912@localhost:5432/chat_db"
 )
 
 engine = create_engine(
@@ -22,7 +22,7 @@ class Base(DeclarativeBase):
     pass
 
 
-def get_db(Base):
+def get_db():
     db = SessionLocal()
 
     try:
@@ -30,5 +30,4 @@ def get_db(Base):
 
     finally:
         db.close()
-        
-            
+                

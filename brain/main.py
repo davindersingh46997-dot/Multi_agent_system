@@ -1,10 +1,10 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
-# import base64
-# import cv2
-# import numpy as np
+import base64
 from brain.api.Programming_api import router as programmer_router
-
+from brain.api.auth_api import router as auth_router
+from fastapi.middleware.cors import CORSMiddleware
+from brain.database.session import engine,Base
 
 app = FastAPI(
      title="Autonomous Coding Agent", 
@@ -12,9 +12,18 @@ app = FastAPI(
      version="1.0.0", 
     )
 
+Base.metadata.create_all(bind=engine)
 
-# class FrameRequest(BaseModel):
-#     frame: str
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 # @app.post("/face/frame")
@@ -53,4 +62,9 @@ app = FastAPI(
 
 app.include_router(
     programmer_router
+)
+
+app.include_router(
+    auth_router,
+    prefix="/api"
 )
