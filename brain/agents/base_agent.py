@@ -1,24 +1,26 @@
-from abc import ABC,abstractmethod
+from abc import ABC, abstractmethod
+from typing import Any
 
-from typing import TypedDict,Any
+from langchain_core.language_models import BaseChatModel
 
-class BaseAgent(TypedDict):
-    """
-    abstract base class for all agents
-    """
 
-    def __init__(self,name : str):
-
-        self._name = name 
-
-    @property
-    def name(self) -> str:
-        return self._name
+class BaseAgent(ABC):
+    def __init__(self, name: str, model: BaseChatModel) -> None:
+        self.name = name
+        self.model = model
 
     @abstractmethod
-    def build(self) -> Any:
-        """
-        build and return the agent
-        """
-        pass
+    async def run(self, task: str, context: dict[str, Any]) -> str:
+        raise NotImplementedError
+
+
+def response_text(response: Any) -> str:
+    content = getattr(response, "content", response)
+    if isinstance(content, str):
+        return content
+    if isinstance(content, list):
+        return "\n".join(
+            str(block.get("text", "")) for block in content if isinstance(block, dict)
+        )
+    return str(content)
             

@@ -36,3 +36,6 @@ __pycache__/
 
 # Build output / misc
 *.tsbuildinfo
+*.db
+.multi_agent/
+workspace/

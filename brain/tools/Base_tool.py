@@ -1,6 +1,6 @@
 from abc import ABC,abstractmethod
 
-from typing import TypedDict,Any
+from typing import Any
 
 class BaseTool(ABC):
     """
@@ -9,7 +9,7 @@ class BaseTool(ABC):
 
     def __init__(self, name: str, description: str):
         self._name = name
-        self._description : str
+        self._description = description
 
     @property
     def name(self) -> str:

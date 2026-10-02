@@ -1,9 +1,5 @@
-from fastapi import FastAPI,APIRouter,Depends
+from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel,Field
-from brain.services.programmer_service import ProgrammerService
-from brain.agents.programmer import ProgrammerAgent
-
-from fastapi import HTTPException
 
 class ProgrammerRequest(BaseModel):
     task : str = Field(
@@ -31,28 +27,7 @@ router = APIRouter(
 def get_programming_service(
     request : ProgrammerRequest
 ):
-    """
-    Execute a programming task using the programmer response
-    """
-    
-    try:
-        service = ProgrammerService(Programmer_agent=ProgrammerAgent)
-        
-        result = service.execute(request.task)
-
-        return ProgrammerResponse(
-            success = result.success,
-            message = result.message,
-        )
-    
-    except ValueError as exc:
-        raise HTTPException(
-            status_code = 400,
-            detail = str(exc),
-        )
-
-    except Exception as exc:
-        raise HTTPException(
-            status_code = 500,
-            detail = str(exc)
-        )
+    raise HTTPException(
+        status_code=410,
+        detail="Use the authenticated /api/tasks workflow instead.",
+    )

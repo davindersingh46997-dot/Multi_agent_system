@@ -1,12 +1,16 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from brain.auth.security import hash_password
+from brain.auth.dependencies import get_current_user
+from brain.auth.security import create_access_token, hash_password, verify_password
 from brain.database.session import get_db
 from brain.models.user import User
 from brain.schemas.auth import (
+    LoginRequest,
+    LoginResponse,
     RegisterRequest,
     RegisterResponse,
+    UserResponse,
 )
 
 router = APIRouter(
@@ -32,11 +36,8 @@ def register(
     # 1. Check whether email already exists
     # -----------------------------------------
 
-    existing_user = (
-        db.query(User)
-        .filter(User.email == request.email)
-        .first()
-    )
+    email = str(request.email).lower()
+    existing_user = db.query(User).filter(User.email == email).first()
 
     if existing_user:
         raise HTTPException(
@@ -57,7 +58,7 @@ def register(
     # -----------------------------------------
 
     user = User(
-        email=request.email,
+        email=email,
         password_hash=password_hash
     )
 
@@ -70,14 +71,9 @@ def register(
     try:
         db.commit()
         db.refresh(user)
-
-    except Exception:
+    except Exception as exc:
         db.rollback()
-
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Unable to create account.",
-        )
+        raise HTTPException(status_code=500, detail="Unable to create account.") from exc
 
     # -----------------------------------------
     # 5. Response
@@ -87,3 +83,23 @@ def register(
         message="Account created successfully.",
         email=user.email,
     )
+
+
+@router.post("/login", response_model=LoginResponse)
+def login(request: LoginRequest, db: Session = Depends(get_db)) -> LoginResponse:
+    user = db.query(User).filter(User.email == request.account_email).first()
+    if user is None or not verify_password(request.password, user.password_hash):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid email or password.",
+        )
+
+    return LoginResponse(
+        access_token=create_access_token(user.id),
+        user=UserResponse(id=user.id, email=user.email),
+    )
+
+
+@router.get("/me", response_model=UserResponse)
+def get_me(user: User = Depends(get_current_user)) -> UserResponse:
+    return UserResponse(id=user.id, email=user.email)

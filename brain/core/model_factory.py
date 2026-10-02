@@ -1,48 +1,32 @@
-from langchain_openai import ChatOpenAI
-from langchain_huggingface import HuggingFaceHub,ChatHuggingFace
-import os 
-from dotenv import load_dotenv
-from typing import Any
+from langchain.chat_models import init_chat_model
+from langchain_core.language_models import BaseChatModel
 
-load_dotenv()
+from brain.core.settings import Settings, get_settings
+
+
+class ModelConfigurationError(RuntimeError):
+    pass
 
 class ModelFactory:
     """
     Responsible for creating the language models instances
     """
     @staticmethod
-    def create_model(
-        model_name : str,
-        temperature : float = 0.0,
-        max_new_tokens : int = 512,
-        api_key : str = None,
-        huggingface_token : str | None = None
-    ) -> Any:
+    def create_model(settings: Settings | None = None) -> BaseChatModel:
+        settings = settings or get_settings()
+        if not settings.model_provider or not settings.model_name:
+            raise ModelConfigurationError(
+                "Set MODEL_PROVIDER and MODEL_NAME in .env before running model-backed tasks."
+            )
 
-       """
-       create a huggingface chat model
-       """ 
-        
-       token = (
-        huggingface_token or os.getenv("HUGGINGFACEHUB_API_TOKEN")
-       )
-       
-       if not token:
-           raise ValueError(
-               "HuggingFace API token is missing"
-           )
+        options: dict[str, object] = {"temperature": 0}
+        if settings.model_api_key:
+            options["api_key"] = settings.model_api_key.get_secret_value()
+        if settings.model_base_url:
+            options["base_url"] = settings.model_base_url
 
-       llm = HuggingFaceHub(
-           repo_id = model_name,
-           task = "text-generation",
-           huggingfacehub_api_token=token,
-           temperature=temperature,
-           max_new_tokens=max_new_tokens,
-       )
-
-       chat_model = ChatHuggingFace(
-           llm = llm
-       )
-
-       return chat_model
-    
+        return init_chat_model(
+            settings.model_name,
+            model_provider=settings.model_provider,
+            **options,
+        )

@@ -2,6 +2,26 @@ from pathlib import Path
 
 from brain.tools.Base_tool import BaseTool
 
+
+def _safe_project_path(project_root: Path, file_path: str) -> Path:
+    candidate = Path(file_path)
+    if candidate.is_absolute() or ".." in candidate.parts:
+        raise PermissionError("Absolute paths and traversal are not permitted.")
+    requested_path = project_root
+    for part in candidate.parts:
+        if part != ".":
+            requested_path = requested_path / part
+        if requested_path.is_symlink():
+            raise PermissionError("Symbolic links are not permitted.")
+    requested_path = requested_path.resolve()
+    if not requested_path.is_relative_to(project_root):
+        raise PermissionError("Access outside project directory is not allowed.")
+    name = requested_path.name.lower()
+    if name.startswith(".env") or requested_path.suffix.lower() in {".pem", ".key", ".p12", ".pfx", ".db"}:
+        raise PermissionError("Sensitive files are not available to project tools.")
+    return requested_path
+
+
 class FileReaderTool(BaseTool):
     """
     Tools to read inside the allowed project directory
@@ -16,24 +36,12 @@ class FileReaderTool(BaseTool):
         self._project_root = Path(project_root).resolve()
 
     def _safe_path(self,file_path : str) -> Path:
-        """
-        prevent access outside the project directory
-        """  
-        requested_path = (
-            self._project_root / file_path
-        ).resolve()
-
-        if not requested_path.is_relative_to(self._project_root):
-            raise PermissionError(
-                "Access outside project directory is not allowed. "
-            )
-
-        return requested_path
+        return _safe_project_path(self._project_root, file_path)
 
     def execute(self,file_path : str) -> str:
         path = self._safe_path(file_path)
 
-        if not path.exist():
+        if not path.exists():
             raise FileNotFoundError(
                 f"File does not exist : {file_path}"
             )        
@@ -61,28 +69,16 @@ class FileWriterTool(BaseTool):
         self._project_root = Path(project_file).resolve()
 
     def _safe_path(self,file_path : str) -> Path:
-
-        requested_path = (
-            self._project_root / file_path
-        ).resolve()  
-
-        if not requested_path.is_relative_to(self._project_root):
-            raise PermissionError(
-                "Access outside project directory is not allowed. "
-            )
+        return _safe_project_path(self._project_root, file_path)
     
     def execute(self,file_path : str,content : str) -> None:
-        path = self._safe_path(file_path)
-
-        if not path.exists():
-            raise FileNotFoundError(
-                f"File does not exists at : {file_path}"
-            )
-
-        return path.write_text(content, encoding="utf-8", errors="replace")
+        self._safe_path(file_path)
+        raise PermissionError(
+            "Direct writes are disabled. Stage changes through the approval workflow."
+        )
     
 
-def FileCreaterTool(BaseTool):
+class FileCreaterTool(BaseTool):
     """
     Tool to create the file inside the project directory 
     """  
@@ -95,29 +91,13 @@ def FileCreaterTool(BaseTool):
         self._project_root = Path(project_root).resolve()
 
     def _safe_path(self, file_path: str) -> Path:
-
-        requested_path = (
-            self._project_root / file_path
-        ).resolve()
-
-        if not requested_path.is_relative_to(self._project_root):
-            raise PermissionError(
-                "Access outside project directory is not allowed."
-            )
-
-        return requested_path
+        return _safe_project_path(self._project_root, file_path)
 
     def execute(self, file_path: str) -> None:
-        path = self._safe_path(file_path)
-
-        if path.exists():
-            raise FileExistsError(
-                f"File already exists at: {file_path}"
-            )
-
-        # Create the file and any necessary parent directories
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.touch()  # Create the empty file
+        self._safe_path(file_path)
+        raise PermissionError(
+            "Direct file creation is disabled. Stage changes through the approval workflow."
+        )
 
 
 class DirectoryListerTool(BaseTool):
@@ -144,19 +124,7 @@ class DirectoryListerTool(BaseTool):
         inside the project directory.
         """
 
-        requested_path = (
-            self._project_root / file_path
-        ).resolve()
-
-        if not requested_path.is_relative_to(
-            self._project_root
-        ):
-            raise PermissionError(
-                "Access outside project directory "
-                "is not allowed."
-            )
-
-        return requested_path
+        return _safe_project_path(self._project_root, file_path)
 
     def execute(
         self,
@@ -194,6 +162,9 @@ class DirectoryListerTool(BaseTool):
         result = []
 
         for entry in entries:
+
+            if entry.is_symlink() or entry.name.lower().startswith(".env"):
+                continue
 
             if entry.is_dir():
                 result.append(

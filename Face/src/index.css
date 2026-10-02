@@ -1,1 +1,172 @@
 @import "tailwindcss";
+
+/* =========================================================================
+   DYNAMIC COSMIC & CYBERNETIC BACKGROUND ANIMATIONS
+   ========================================================================= */
+
+@keyframes orbFloat1 {
+  0%, 100% {
+    transform: translate(0px, 0px) scale(1);
+    opacity: 0.22;
+  }
+  33% {
+    transform: translate(50px, -40px) scale(1.18);
+    opacity: 0.38;
+  }
+  66% {
+    transform: translate(-35px, 35px) scale(0.92);
+    opacity: 0.28;
+  }
+}
+
+@keyframes orbFloat2 {
+  0%, 100% {
+    transform: translate(0px, 0px) scale(1);
+    opacity: 0.18;
+  }
+  40% {
+    transform: translate(-60px, 45px) scale(1.22);
+    opacity: 0.32;
+  }
+  75% {
+    transform: translate(45px, -30px) scale(0.88);
+    opacity: 0.24;
+  }
+}
+
+@keyframes orbFloat3 {
+  0%, 100% {
+    transform: translate(0px, 0px) scale(1);
+    opacity: 0.16;
+  }
+  50% {
+    transform: translate(55px, -50px) scale(1.15);
+    opacity: 0.3;
+  }
+}
+
+@keyframes twinkleFast {
+  0%, 100% {
+    opacity: 0.3;
+    transform: scale(0.98);
+  }
+  50% {
+    opacity: 0.95;
+    transform: scale(1.02);
+  }
+}
+
+@keyframes twinkleSlow {
+  0%, 100% {
+    opacity: 0.2;
+    transform: scale(0.97);
+  }
+  50% {
+    opacity: 0.75;
+    transform: scale(1.03);
+  }
+}
+
+@keyframes shootingStar1 {
+  0% {
+    transform: translateX(0) translateY(0) rotate(-45deg) scaleX(0);
+    opacity: 0;
+  }
+  4% {
+    opacity: 1;
+    transform: translateX(-120px) translateY(120px) rotate(-45deg) scaleX(1);
+  }
+  8% {
+    opacity: 0;
+    transform: translateX(-240px) translateY(240px) rotate(-45deg) scaleX(0.2);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-240px) translateY(240px) rotate(-45deg) scaleX(0);
+  }
+}
+
+@keyframes shootingStar2 {
+  0% {
+    transform: translateX(0) translateY(0) rotate(-35deg) scaleX(0);
+    opacity: 0;
+  }
+  3% {
+    opacity: 0.9;
+    transform: translateX(-100px) translateY(70px) rotate(-35deg) scaleX(1);
+  }
+  6% {
+    opacity: 0;
+    transform: translateX(-200px) translateY(140px) rotate(-35deg) scaleX(0.3);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-200px) translateY(140px) rotate(-35deg) scaleX(0);
+  }
+}
+
+@keyframes cyberGridDrift {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 60px 60px;
+  }
+}
+
+@keyframes cardAuraPulse {
+  0%, 100% {
+    opacity: 0.55;
+    transform: scale(0.99);
+  }
+  50% {
+    opacity: 0.85;
+    transform: scale(1.02);
+  }
+}
+
+/* Custom Animation Utility Classes */
+.animate-orb-1 {
+  animation: orbFloat1 18s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+
+.animate-orb-2 {
+  animation: orbFloat2 24s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+
+.animate-orb-3 {
+  animation: orbFloat3 20s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+
+.animate-twinkle-fast {
+  animation: twinkleFast 4s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+
+.animate-twinkle-slow {
+  animation: twinkleSlow 7s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+
+.animate-shooting-star-1 {
+  animation: shootingStar1 9s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+
+.animate-shooting-star-2 {
+  animation: shootingStar2 13s ease-in-out 4s infinite;
+  will-change: transform, opacity;
+}
+
+.animate-grid-drift {
+  animation: cyberGridDrift 28s linear infinite;
+  will-change: background-position;
+}
+
+.animate-card-aura {
+  animation: cardAuraPulse 6s ease-in-out infinite;
+  will-change: transform, opacity;
+}
