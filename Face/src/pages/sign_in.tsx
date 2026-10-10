@@ -63,7 +63,7 @@ function SignIn() {
                 JSON.stringify(data.user)
             );
 
-            navigate("chat");
+            navigate("/workspace", { replace: true });
 
         } catch (err) {
             console.error("Login error", err);
